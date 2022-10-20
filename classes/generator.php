@@ -50,10 +50,15 @@ class generator {
             $name = format_string($result->name);
             [$firstname, $lastname] = explode(' ', "$name ", 2);
 
+            // Some characters don't have last names.
+            if ($lastname === null || trim($lastname) === '') {
+                $lastname = ' ';
+            }
+
             $user = [
                 'username' => clean_param(strtolower(str_replace(' ', '', $result->name)), PARAM_ALPHANUM),
                 'firstname' => $firstname,
-                'lastname' => $lastname ?? '',
+                'lastname' => $lastname,
                 'urlpicture' => $result->thumbnail->path . '.' . $result->thumbnail->extension,
                 'description' => $result->description ?? '',
             ];
@@ -72,96 +77,82 @@ class generator {
      * @return bool
      */
     private function create_user(array $record): bool {
-       global $DB, $CFG;
-       require_once($CFG->dirroot.'/user/lib.php');
-       require_once($CFG->libdir . '/filelib.php');
-       require_once($CFG->libdir . '/gdlib.php');
+        global $DB, $CFG;
+        require_once($CFG->dirroot.'/user/lib.php');
+        require_once($CFG->libdir . '/filelib.php');
+        require_once($CFG->libdir . '/gdlib.php');
 
-       if (!isset($record['auth'])) {
-           $record['auth'] = 'manual';
-       }
+        // Check if username is taken. For now skip.
+        if ($DB->get_record('user', ['username' => $record['username']])) {
+            return false;
+        }
 
-       $record['firstnamephonetic'] = '';
-       $record['lastnamephonetic'] = '';
-       $record['middlename'] = '';
-       $record['alternatename'] = '';
-       $record['idnumber'] = '';
-       $record['mnethostid'] = $CFG->mnet_localhost_id;
-       $record['password'] = hash_internal_user_password('Passw0rd');
+        $record['auth'] = 'manual';
+        $record['firstnamephonetic'] = '';
+        $record['lastnamephonetic'] = '';
+        $record['middlename'] = '';
+        $record['alternatename'] = '';
+        $record['idnumber'] = '';
+        $record['mnethostid'] = $CFG->mnet_localhost_id;
+        $record['password'] = hash_internal_user_password('Passw0rd');
+        $record['email'] = $record['username'] . '@example.com';
+        $record['confirmed'] = 1;
+        $record['lastip'] = '0.0.0.0';
+        $record['picture'] = 0;
 
-       if (!isset($record['email'])) {
-           $record['email'] = $record['username'].'@example.com';
-       }
+        $userid = user_create_user($record, false, false);
 
-       if (!isset($record['confirmed'])) {
-           $record['confirmed'] = 1;
-       }
-
-       if (!isset($record['lastip'])) {
-           $record['lastip'] = '0.0.0.0';
-       }
-
-       $record['picture'] = 0;
-
-       // Check if username is taken. For now skip.
-       if ($DB->get_record('user', ['username' => $record['username']])) {
-           return false;
-       }
-
-       $userid = user_create_user($record, false, false);
-
-       if ($extrafields = array_intersect_key($record, ['password' => 1, 'timecreated' => 1])) {
+        if ($extrafields = array_intersect_key($record, ['password' => 1, 'timecreated' => 1])) {
            $DB->update_record('user', ['id' => $userid] + $extrafields);
-       }
+        }
 
-       $fs = get_file_storage();
+        $context = context_user::instance($userid, MUST_EXIST);
+        $fs = get_file_storage();
+        $fs->delete_area_files($context->id, 'user', 'newicon');
 
-       $context = context_user::instance($userid, MUST_EXIST);
-       $fs->delete_area_files($context->id, 'user', 'newicon');
-
-       $filerecord = array(
+        $filerecord = array(
            'contextid' => $context->id,
            'component' => 'user',
            'filearea' => 'newicon',
            'itemid' => 0,
            'filepath' => '/'
-       );
+        );
 
-       $urlparams = array(
+        $urlparams = array(
            'calctimeout' => false,
            'timeout' => 5,
            'skipcertverify' => true,
            'connecttimeout' => 5
-       );
+        );
 
-       try {
+        try {
            $fs->create_file_from_url($filerecord, $record['urlpicture'], $urlparams);
-       } catch (file_exception $e) {
+        } catch (file_exception $e) {
            throw new moodle_exception(get_string($e->errorcode, $e->module, $e->a));
-       }
+        }
 
-       $iconfile = $fs->get_area_files($context->id, 'user', 'newicon', false, 'itemid', false);
+        $iconfile = $fs->get_area_files($context->id, 'user', 'newicon', false, 'itemid', false);
 
-       // There should only be one.
-       $iconfile = reset($iconfile);
+        // There should only be one.
+        $iconfile = reset($iconfile);
 
-       // Something went wrong while creating temp file - remove the uploaded file.
-       if (!$iconfile = $iconfile->copy_content_to_temp()) {
+        // Something went wrong while creating temp file - remove the uploaded file.
+        if (!$iconfile = $iconfile->copy_content_to_temp()) {
            $fs->delete_area_files($context->id, 'user', 'newicon');
            throw new moodle_exception('There was a problem copying the profile picture to temp.');
-       }
+        }
 
-       // Copy file to temporary location and the send it for processing icon.
-       $newpicture = (int) process_new_icon($context, 'user', 'icon', 0, $iconfile);
-       // Delete temporary file.
-       @unlink($iconfile);
-       // Remove uploaded file.
-       $fs->delete_area_files($context->id, 'user', 'newicon');
-       // Set the user's picture.
-       $DB->set_field('user', 'picture', $newpicture, array('id' => $userid));
+        // Copy file to temporary location and the send it for processing icon.
+        $newpicture = (int) process_new_icon($context, 'user', 'icon', 0, $iconfile);
+        // Delete temporary file.
+        @unlink($iconfile);
+        // Remove uploaded file.
+        $fs->delete_area_files($context->id, 'user', 'newicon');
+        // Set the user's picture.
+        $DB->set_field('user', 'picture', $newpicture, array('id' => $userid));
 
-       \core\event\user_created::create_from_userid($userid)->trigger();
+        \core\event\user_created::create_from_userid($userid)->trigger();
 
-       return true;
+        return true;
    }
 }
