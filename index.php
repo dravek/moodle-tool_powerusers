@@ -51,7 +51,6 @@ if ($mform->is_cancelled()) {
 
     $string = get_string('userscreated', 'tool_powerusers', $count);
     redirect($url, $string, null, \core\output\notification::NOTIFY_SUCCESS);
-
 }
 
 // Display form.
