@@ -49,7 +49,7 @@ class marvelapi {
         $hash = md5($ts.$privatekey.$publickey);
         $type = ($type === 'exactmatch') ? 'name' : 'nameStartsWith';
 
-        $url = "http://gateway.marvel.com/v1/public/characters?hash=$hash&apikey=$publickey&ts=$ts&$type=$name";
+        $url = "https://gateway.marvel.com/v1/public/characters?hash=$hash&apikey=$publickey&ts=$ts&$type=$name";
         $content = download_file_content($url);
 
         if (!$content) {

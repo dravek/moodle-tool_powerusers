@@ -26,12 +26,12 @@ require_login();
 
 $url = new moodle_url('/admin/tool/powerusers/index.php');
 
-$wpgeneratorstr = get_string('pluginname', 'tool_powerusers');
+$pluginname = get_string('pluginname', 'tool_powerusers');
 $PAGE->set_context(context_system::instance());
 $PAGE->set_url($url);
 $PAGE->set_pagelayout('report');
-$PAGE->set_title($wpgeneratorstr);
-$PAGE->set_heading($wpgeneratorstr);
+$PAGE->set_title($pluginname);
+$PAGE->set_heading($pluginname);
 $PAGE->navbar->add(get_string('home'), new moodle_url($url));
 
 $mform = new tool_powerusers_form(null,  []);
