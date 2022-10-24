@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use tool_powerusers\constants;
+
 defined('MOODLE_INTERNAL') || die;
 
 global $CFG;
@@ -34,19 +36,58 @@ class tool_powerusers_form extends moodleform {
         $html = html_writer::tag('div', get_string('formmsg', 'tool_powerusers'));
         $mform->addElement('static', 'formmsg', '', $html);
 
+        $mform->addElement('static', '', '', html_writer::empty_tag('hr'));
+
+        // Type of search (manual or random).
+        $mform->addElement('radio', 'type', null, get_string('searchmanual', 'tool_powerusers'), constants::MANUAL);
+        $mform->addElement('radio', 'type', null, get_string('searchrandom', 'tool_powerusers'), constants::RANDOM);
+        $mform->setType('type', PARAM_INT);
+        $mform->setDefault('type', constants::MANUAL);
+
         // Name to search.
         $mform->addElement('text', 'name', get_string('charactername', 'tool_powerusers'));
         $mform->setType('name', PARAM_TEXT);
-        $missingnamestr = get_string('errornoname', 'tool_powerusers');
-        $mform->addRule('name', $missingnamestr, 'required', null, 'client');
+        $mform->hideIf('name', 'type', 'noteq', constants::MANUAL);
 
-        // Type of search.
+        // Search accuracy.
         $options = [
-            'exactmatch' => get_string('searchexactmatch', 'tool_powerusers'),
-            'startswith' => get_string('searchstartswith', 'tool_powerusers'),
+            constants::SEARCH_EXACT_MATCH => get_string('searchexactmatch', 'tool_powerusers'),
+            constants::SEARCH_STARTS_WITH => get_string('searchstartswith', 'tool_powerusers'),
         ];
         $mform->addElement('select', 'searchaccuracy', get_string('searchaccuracy', 'tool_powerusers'), $options);
+        $mform->hideIf('searchaccuracy', 'type', 'noteq', constants::MANUAL);
+
+        // Random quantity search.
+        $options = [
+            1 => '1',
+            2 => '2',
+            3 => '3',
+            4 => '4',
+            5 => '5',
+            10 => '10',
+        ];
+        $mform->addElement('select', 'quantity', get_string('quantity', 'tool_powerusers'), $options);
+        $mform->setType('quantity', PARAM_INT);
+        $mform->setDefault('quantity', 3);
+        $mform->hideIf('quantity', 'type', 'noteq', constants::RANDOM);
 
         $this->add_action_buttons(false, get_string('generateprogram', 'tool_powerusers'));
+    }
+
+    /**
+     * Perform some extra moodle validation
+     *
+     * @param array $data
+     * @param array $files
+     * @return array
+     */
+    public function validation($data, $files): array {
+        $errors = [];
+
+        if ((int) $data['type'] === constants::MANUAL && empty($data['name'])) {
+            $errors['name'] = get_string('errornoname', 'tool_powerusers');
+        }
+
+        return $errors;
     }
 }

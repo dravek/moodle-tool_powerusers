@@ -17,6 +17,7 @@
 namespace tool_powerusers;
 
 use moodle_exception;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -42,12 +43,12 @@ class marvelapi {
         $publickey = get_config('tool_powerusers', 'marvelpublickey');
 
         if (empty($privatekey) || empty($publickey)) {
-            throw new moodle_exception('You need to add your public and private keys to plugin settings first!');
+            throw new moodle_exception(get_string('errorkeys', 'tool_powerusers'));
         }
 
         $name = str_replace( ' ', '%20', trim($name));
         $hash = md5($ts.$privatekey.$publickey);
-        $type = ($type === 'exactmatch') ? 'name' : 'nameStartsWith';
+        $type = ($type === constants::SEARCH_EXACT_MATCH) ? 'name' : 'nameStartsWith';
 
         $url = "https://gateway.marvel.com/v1/public/characters?hash=$hash&apikey=$publickey&ts=$ts&$type=$name";
         $content = download_file_content($url);
@@ -58,5 +59,29 @@ class marvelapi {
 
         $content = json_decode($content);
         return $content->data->results;
+    }
+
+    /**
+     * Returns user structure with fetched data
+     *
+     * @param stdClass $data
+     * @return array
+     */
+    public static function get_user_data(stdClass $data): array {
+        $name = format_string($data->name);
+        [$firstname, $lastname] = explode(' ', "$name ", 2);
+
+        // Some characters don't have last names.
+        if ($lastname === null || trim($lastname) === '') {
+            $lastname = ' ';
+        }
+
+        return [
+            'username' => clean_param(strtolower(str_replace(' ', '', $data->name)), PARAM_ALPHANUM),
+            'firstname' => $firstname,
+            'lastname' => $lastname,
+            'urlpicture' => $data->thumbnail->path . '.' . $data->thumbnail->extension,
+            'description' => $data->description ?? '',
+        ];
     }
 }

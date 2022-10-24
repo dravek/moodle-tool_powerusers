@@ -14,17 +14,21 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package   tool_powerusers
- * @copyright 2022 David Matamoros <davidmc@moodle.com>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace tool_powerusers;
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component    = 'tool_powerusers';
-$plugin->version      = 2022102700;
-$plugin->requires     = 2015111600;
-$plugin->release      = '1.0.1';
-$plugin->maturity     = MATURITY_STABLE;
-$plugin->dependencies = [];
+/**
+ * Class constants
+ *
+ * @package    tool_powerusers
+ * @copyright  2022 David Matamoros <davidmc@moodle.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class constants {
+    public const MANUAL = 0;
+    public const RANDOM = 1;
+    public const SEARCH_EXACT_MATCH = 'exactmatch';
+    public const SEARCH_STARTS_WITH = 'namestartswith';
+    public const FILENAME = 'charactersnames.json';
+}
