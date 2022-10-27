@@ -39,31 +39,41 @@ class generator {
      * @return array
      */
     public function generate_users(stdClass $data): array {
-        $results = marvelapi::get_users($data->name, $data->searchaccuracy);
-
-        if (!$results) {
-            return [false, get_string('errornousers', 'tool_powerusers')];
-        }
-
         $created = 0;
-        foreach ($results as $result) {
-            $name = format_string($result->name);
-            [$firstname, $lastname] = explode(' ', "$name ", 2);
 
-            // Some characters don't have last names.
-            if ($lastname === null || trim($lastname) === '') {
-                $lastname = ' ';
+        // Generate users manually entering the name.
+        if ((int) $data->type === constants::MANUAL) {
+            $results = marvelapi::get_users($data->name, $data->searchaccuracy);
+
+            if (!$results) {
+                return [false, get_string('errornousers', 'tool_powerusers')];
             }
 
-            $user = [
-                'username' => clean_param(strtolower(str_replace(' ', '', $result->name)), PARAM_ALPHANUM),
-                'firstname' => $firstname,
-                'lastname' => $lastname,
-                'urlpicture' => $result->thumbnail->path . '.' . $result->thumbnail->extension,
-                'description' => $result->description ?? '',
-            ];
-            if ($this->create_user($user)) {
-                $created++;
+            foreach ($results as $result) {
+                $user = marvelapi::get_user_data($result);
+                if ($this->create_user($user)) {
+                    $created++;
+                }
+            }
+        } else {
+            // Generate users randomly from a list.
+            $names = array_values(json_decode(file_get_contents(constants::FILENAME), false));
+            $total = count($names) - 1;
+
+            while ($created < (int) $data->quantity) {
+                $randomnumber = random_int(0, $total);
+
+                $results = marvelapi::get_users($names[$randomnumber], constants::SEARCH_EXACT_MATCH);
+
+                if (!$results) {
+                    continue;
+                }
+
+                $result = reset($results);
+                $user = marvelapi::get_user_data($result);
+                if ($this->create_user($user)) {
+                    $created++;
+                }
             }
         }
 

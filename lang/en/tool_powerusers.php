@@ -22,6 +22,7 @@
 
 $string['charactername'] = 'Character name';
 $string['error'] = '{$a}';
+$string['errorkeys'] = 'You need to add your public and private keys to plugin settings first!';
 $string['errormsg'] = 'That hash, timestamp and key combination is invalid';
 $string['errornoname'] = 'Character name missing';
 $string['errornousers'] = 'No users found';
@@ -35,8 +36,11 @@ $string['privatekey'] = 'Private key';
 $string['privatekey_desc'] = 'Marvel API Private key';
 $string['publickey'] = 'Public key';
 $string['publickey_desc'] = 'Marvel API Public key';
+$string['quantity'] = 'Amount of users to generate';
 $string['searchaccuracy'] = 'Type of search for name';
 $string['searchexactmatch'] = 'Exact match';
+$string['searchmanual'] = 'Search manually for a character\'s name';
+$string['searchrandom'] = 'Generate random characters';
 $string['searchstartswith'] = 'Starts with';
 $string['tool_poweruserssettings'] = 'Power user settings';
 $string['userscreated'] = '{$a} user(s) created succesfully';
