@@ -41,6 +41,8 @@ class generator {
     public function generate_users(stdClass $data): array {
         $created = 0;
 
+        $password = (!empty($data->randompassword)) ? generate_password() : trim($data->password);
+
         // Generate users manually entering the name.
         if ((int) $data->type === constants::MANUAL) {
             $results = marvelapi::get_users($data->name, $data->searchaccuracy);
@@ -51,6 +53,7 @@ class generator {
 
             foreach ($results as $result) {
                 $user = marvelapi::get_user_data($result);
+                $user['password'] = $password;
                 if ($this->create_user($user)) {
                     $created++;
                 }
@@ -71,6 +74,7 @@ class generator {
 
                 $result = reset($results);
                 $user = marvelapi::get_user_data($result);
+                $user['password'] = $password;
                 if ($this->create_user($user)) {
                     $created++;
                 }
@@ -104,7 +108,7 @@ class generator {
         $record['alternatename'] = '';
         $record['idnumber'] = '';
         $record['mnethostid'] = $CFG->mnet_localhost_id;
-        $record['password'] = hash_internal_user_password('Passw0rd');
+        $record['password'] = hash_internal_user_password($record['password']);
         $record['email'] = $record['username'] . '@example.com';
         $record['confirmed'] = 1;
         $record['lastip'] = '0.0.0.0';
