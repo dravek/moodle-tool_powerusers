@@ -71,6 +71,15 @@ class tool_powerusers_form extends moodleform {
         $mform->setDefault('quantity', 3);
         $mform->hideIf('quantity', 'type', 'noteq', constants::RANDOM);
 
+        // Password.
+        $group = [];
+        $group[] =& $mform->createElement('password', 'password');
+        $group[] =& $mform->createElement('checkbox', 'randompassword', get_string('randompassword', 'tool_powerusers'), null);
+        $mform->setType('password', PARAM_TEXT);
+        $mform->addGroup($group, 'passwordgroup', get_string('password', 'moodle'), ' ', false);
+        $mform->disabledIf('password', 'randompassword', 'eq', 1);
+        $mform->setDefault('randompassword', 1);
+
         $this->add_action_buttons(false, get_string('generateprogram', 'tool_powerusers'));
     }
 

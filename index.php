@@ -23,11 +23,13 @@
 require_once(__DIR__ . '/../../../config.php');
 
 require_login();
+$systemcontext = context_system::instance();
+require_capability('moodle/site:config', $systemcontext);
 
 $url = new moodle_url('/admin/tool/powerusers/index.php');
 
 $pluginname = get_string('pluginname', 'tool_powerusers');
-$PAGE->set_context(context_system::instance());
+$PAGE->set_context($systemcontext);
 $PAGE->set_url($url);
 $PAGE->set_pagelayout('report');
 $PAGE->set_title($pluginname);
