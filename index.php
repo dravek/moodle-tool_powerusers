@@ -44,10 +44,10 @@ if ($mform->is_cancelled()) {
 } else if ($data = $mform->get_data()) {
 
     $generator = new \tool_powerusers\generator();
-    [$status, $count] = $generator->generate_users($data);
+    [$status, $count, $message] = $generator->generate_users($data);
 
     if (!$status) {
-        $string = get_string('error', 'tool_powerusers', $count);
+        $string = get_string('error', 'tool_powerusers', $message);
         redirect($url, $string, null, \core\output\notification::NOTIFY_ERROR);
     }
 
