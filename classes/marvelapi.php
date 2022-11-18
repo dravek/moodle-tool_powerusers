@@ -53,16 +53,9 @@ class marvelapi {
         $url = "https://gateway.marvel.com/v1/public/characters?hash=$hash&apikey=$publickey&ts=$ts&$type=$name";
         $content = download_file_content($url, null, null, true);
 
-        if ((int) $content->status !== 200) {
-            return [
-                'status' => constants::ERROR,
-                'results' => (array) json_decode($content->results),
-            ];
-        }
-
         return [
-          'status' => constants::OK,
-          'results' => (array) json_decode($content->results),
+            'status' => ((int) $content->status !== 200) ? constants::ERROR : constants::OK,
+            'results' => (array) json_decode($content->results),
         ];
     }
 
