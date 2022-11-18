@@ -31,4 +31,6 @@ class constants {
     public const SEARCH_EXACT_MATCH = 'exactmatch';
     public const SEARCH_STARTS_WITH = 'namestartswith';
     public const FILENAME = 'charactersnames.json';
+    public const OK = 1;
+    public const ERROR = 2;
 }

@@ -36,7 +36,7 @@ class generator {
      * Generate users from the API
      *
      * @param stdClass $data
-     * @return array
+     * @return array [status, count, message]
      */
     public function generate_users(stdClass $data): array {
         $created = 0;
@@ -45,13 +45,17 @@ class generator {
 
         // Generate users manually entering the name.
         if ((int) $data->type === constants::MANUAL) {
-            $results = marvelapi::get_users($data->name, $data->searchaccuracy);
+            $apidata = marvelapi::get_users($data->name, $data->searchaccuracy);
 
-            if (!$results) {
-                return [false, get_string('errornousers', 'tool_powerusers')];
+            if ($apidata['status'] === constants::ERROR) {
+                return [false, 0, $apidata['results']['code'] . ':' . $apidata['results']['message']];
             }
 
-            foreach ($results as $result) {
+            if ((int) $apidata['results']['data']->count === 0) {
+                return [false, 0, get_string('errornousers', 'tool_powerusers')];
+            }
+
+            foreach ($apidata['results']['data']->results as $result) {
                 $user = marvelapi::get_user_data($result);
                 $user['password'] = $password;
                 if ($this->create_user($user)) {
@@ -66,13 +70,17 @@ class generator {
             while ($created < (int) $data->quantity) {
                 $randomnumber = random_int(0, $total);
 
-                $results = marvelapi::get_users($names[$randomnumber], constants::SEARCH_EXACT_MATCH);
+                $apidata = marvelapi::get_users($names[$randomnumber], constants::SEARCH_EXACT_MATCH);
 
-                if (!$results) {
+                if ($apidata['status'] === constants::ERROR) {
+                    return [false, 0, $apidata['results']['code'] . ':' . $apidata['results']['message']];
+                }
+
+                if ((int) $apidata['results']['data']->count === 0) {
                     continue;
                 }
 
-                $result = reset($results);
+                $result = reset($apidata['results']['data']->results);
                 $user = marvelapi::get_user_data($result);
                 $user['password'] = $password;
                 if ($this->create_user($user)) {
@@ -81,7 +89,7 @@ class generator {
             }
         }
 
-        return [true, $created];
+        return [true, $created, ''];
    }
 
     /**

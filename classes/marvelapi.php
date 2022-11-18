@@ -35,9 +35,9 @@ class marvelapi {
      *
      * @param string $name
      * @param string $type
-     * @return array|null
+     * @return array [status, results]
      */
-    public static function get_users(string $name, string $type): ?array {
+    public static function get_users(string $name, string $type): array {
         $ts = time();
         $privatekey = get_config('tool_powerusers', 'marvelprivatekey');
         $publickey = get_config('tool_powerusers', 'marvelpublickey');
@@ -51,14 +51,19 @@ class marvelapi {
         $type = ($type === constants::SEARCH_EXACT_MATCH) ? 'name' : 'nameStartsWith';
 
         $url = "https://gateway.marvel.com/v1/public/characters?hash=$hash&apikey=$publickey&ts=$ts&$type=$name";
-        $content = download_file_content($url);
+        $content = download_file_content($url, null, null, true);
 
-        if (!$content) {
-            return null;
+        if ((int) $content->status !== 200) {
+            return [
+                'status' => constants::ERROR,
+                'results' => (array) json_decode($content->results),
+            ];
         }
 
-        $content = json_decode($content);
-        return $content->data->results;
+        return [
+          'status' => constants::OK,
+          'results' => (array) json_decode($content->results),
+        ];
     }
 
     /**

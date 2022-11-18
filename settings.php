@@ -40,11 +40,11 @@ if ($hassiteconfig) {
 
     $temp->add(new admin_setting_configtext('tool_powerusers/marvelprivatekey',
         new lang_string('privatekey', 'tool_powerusers'),
-        new lang_string('privatekey_desc', 'tool_powerusers'), 'MY_PRIVATE_KEY', PARAM_TEXT));
+        new lang_string('privatekey_desc', 'tool_powerusers'), '', PARAM_TEXT));
 
     $temp->add(new admin_setting_configtext('tool_powerusers/marvelpublickey',
         new lang_string('publickey', 'tool_powerusers'),
-        new lang_string('publickey_desc', 'tool_powerusers'), 'MY_PUBLIC_KEY', PARAM_TEXT));
+        new lang_string('publickey_desc', 'tool_powerusers'), '', PARAM_TEXT));
 
     $ADMIN->add('tool_powerusers_settings_root', $temp);
 }
