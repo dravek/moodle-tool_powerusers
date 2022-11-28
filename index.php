@@ -15,28 +15,28 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * User end point for interacting with the tool
+ *
  * @package    tool_powerusers
  * @copyright  2022 David Matamoros <davidmc@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(__DIR__ . '/../../../config.php');
+require_once("{$CFG->libdir}/adminlib.php");
 
-require_login();
-$systemcontext = context_system::instance();
-require_capability('moodle/site:config', $systemcontext);
+admin_externalpage_setup('tool_powerusers');
 
 $url = new moodle_url('/admin/tool/powerusers/index.php');
 
 $pluginname = get_string('pluginname', 'tool_powerusers');
-$PAGE->set_context($systemcontext);
+$PAGE->set_context(context_system::instance());
 $PAGE->set_url($url);
 $PAGE->set_pagelayout('report');
 $PAGE->set_title($pluginname);
 $PAGE->set_heading($pluginname);
-$PAGE->navbar->add(get_string('home'), new moodle_url($url));
 
-$mform = new tool_powerusers_form(null,  []);
+$mform = new \tool_powerusers\form(null, []);
 
 // Process Form data.
 if ($mform->is_cancelled()) {

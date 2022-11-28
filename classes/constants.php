@@ -16,8 +16,6 @@
 
 namespace tool_powerusers;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Class constants
  *
@@ -26,11 +24,25 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class constants {
+
+    /** @var int Manual */
     public const MANUAL = 0;
+
+    /** @var int Random */
     public const RANDOM = 1;
+
+    /** @var string Search exact matches */
     public const SEARCH_EXACT_MATCH = 'exactmatch';
+
+    /** @var string Search starts with */
     public const SEARCH_STARTS_WITH = 'namestartswith';
+
+    /** @var string JSON filename */
     public const FILENAME = 'charactersnames.json';
+
+    /** @var int OK */
     public const OK = 1;
+
+    /** @var int Error */
     public const ERROR = 2;
 }

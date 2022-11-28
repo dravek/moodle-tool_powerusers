@@ -25,10 +25,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$str = get_string('pluginname', 'tool_powerusers');
-$url = "$CFG->wwwroot/$CFG->admin/tool/powerusers/index.php";
-$adminexternalpage = new admin_externalpage('tool_powerusers', $str, $url, 'moodle/user:viewalldetails');
-$ADMIN->add('development', $adminexternalpage);
+$ADMIN->add('development', new admin_externalpage(
+    'tool_powerusers',
+    get_string('pluginname', 'tool_powerusers'),
+    new moodle_url('/admin/tool/powerusers/index.php')
+));
 
 if ($hassiteconfig) {
     $ADMIN->add('root', new admin_category('tool_powerusers_settings_root',

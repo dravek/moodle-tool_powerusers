@@ -16,8 +16,6 @@
 
 namespace tool_powerusers\privacy;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Privacy provider implementation for tool powerusers
  *
