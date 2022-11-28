@@ -19,8 +19,6 @@ namespace tool_powerusers;
 use moodle_exception;
 use stdClass;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Class marvelapi
  *

@@ -14,22 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use tool_powerusers\constants;
+namespace tool_powerusers;
+
+use html_writer;
+use moodleform;
 
 defined('MOODLE_INTERNAL') || die;
 
 global $CFG;
-
-require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->libdir . '/formslib.php');
 
 /**
+ * Form for generating super heroes
+ *
  * @package    tool_powerusers
  * @copyright  2022 David Matamoros <davidmc@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class tool_powerusers_form extends moodleform {
+class form extends moodleform {
 
+    /**
+     * Form definition
+     */
     public function definition() {
         $mform = $this->_form;
 

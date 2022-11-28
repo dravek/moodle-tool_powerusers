@@ -21,8 +21,6 @@ use file_exception;
 use moodle_exception;
 use stdClass;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Class generator
  *
@@ -90,7 +88,7 @@ class generator {
         }
 
         return [true, $created, ''];
-   }
+    }
 
     /**
      * Create a user with the profile picture
@@ -125,7 +123,7 @@ class generator {
         $userid = user_create_user($record, false, false);
 
         if ($extrafields = array_intersect_key($record, ['password' => 1, 'timecreated' => 1])) {
-           $DB->update_record('user', ['id' => $userid] + $extrafields);
+            $DB->update_record('user', ['id' => $userid] + $extrafields);
         }
 
         $context = context_user::instance($userid, MUST_EXIST);
@@ -148,9 +146,9 @@ class generator {
         );
 
         try {
-           $fs->create_file_from_url($filerecord, $record['urlpicture'], $urlparams);
+            $fs->create_file_from_url($filerecord, $record['urlpicture'], $urlparams);
         } catch (file_exception $e) {
-           throw new moodle_exception(get_string($e->errorcode, $e->module, $e->a));
+            throw new moodle_exception(get_string($e->errorcode, $e->module, $e->a));
         }
 
         $iconfile = $fs->get_area_files($context->id, 'user', 'newicon', false, 'itemid', false);
@@ -160,8 +158,8 @@ class generator {
 
         // Something went wrong while creating temp file - remove the uploaded file.
         if (!$iconfile = $iconfile->copy_content_to_temp()) {
-           $fs->delete_area_files($context->id, 'user', 'newicon');
-           throw new moodle_exception('There was a problem copying the profile picture to temp.');
+            $fs->delete_area_files($context->id, 'user', 'newicon');
+            throw new moodle_exception('There was a problem copying the profile picture to temp.');
         }
 
         // Copy file to temporary location and the send it for processing icon.
@@ -176,5 +174,5 @@ class generator {
         \core\event\user_created::create_from_userid($userid)->trigger();
 
         return true;
-   }
+    }
 }
