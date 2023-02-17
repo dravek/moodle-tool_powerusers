@@ -120,10 +120,10 @@ class generator {
         $record['lastip'] = '0.0.0.0';
         $record['picture'] = 0;
 
-        $userid = user_create_user($record, false, false);
+        $userid = user_create_user((object) $record, false, false);
 
         if ($extrafields = array_intersect_key($record, ['password' => 1, 'timecreated' => 1])) {
-            $DB->update_record('user', ['id' => $userid] + $extrafields);
+            $DB->update_record('user', (object) (['id' => $userid] + $extrafields));
         }
 
         $context = context_user::instance($userid, MUST_EXIST);
