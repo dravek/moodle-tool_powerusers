@@ -119,6 +119,7 @@ class generator {
         $record['confirmed'] = 1;
         $record['lastip'] = '0.0.0.0';
         $record['picture'] = 0;
+        $record['lang'] = '';
 
         $userid = user_create_user((object) $record, false, false);
 
