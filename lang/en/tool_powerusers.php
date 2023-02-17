@@ -46,5 +46,5 @@ $string['searchexactmatch'] = 'Exact match';
 $string['searchmanual'] = 'Search manually for a character\'s name';
 $string['searchrandom'] = 'Generate random characters';
 $string['searchstartswith'] = 'Starts with';
-$string['tool_poweruserssettings'] = 'Power user settings';
+$string['tool_poweruserssettings'] = 'Power users settings';
 $string['userscreated'] = '{$a} user(s) created succesfully';
