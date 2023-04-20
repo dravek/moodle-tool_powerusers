@@ -1,4 +1,4 @@
-# Power users generator
+# Power users generator [![Build Status](https://github.com/dravek/moodle-tool_powerusers/workflows/moodle-plugin-ci/badge.svg)](https://github.com/dravek/moodle-tool_powerusers/actions)
 
 This generator uses the Marvel API to generate users from your favorite characters in your Moodle instance.
 
