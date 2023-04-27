@@ -39,6 +39,9 @@ if ($hassiteconfig) {
     $temp = new admin_settingpage('tool_powerusers_settings',
         new lang_string('tool_poweruserssettings', 'tool_powerusers'));
 
+    $temp->add(new admin_setting_heading('tool_powerusers/comment', '',
+        new lang_string('settingsmsg', 'tool_powerusers')));
+
     $temp->add(new admin_setting_configtext('tool_powerusers/marvelprivatekey',
         new lang_string('privatekey', 'tool_powerusers'),
         new lang_string('privatekey_desc', 'tool_powerusers'), '', PARAM_TEXT));
