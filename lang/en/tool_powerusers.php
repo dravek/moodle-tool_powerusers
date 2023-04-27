@@ -29,7 +29,7 @@ $string['errormsg'] = 'That hash, timestamp and key combination is invalid';
 $string['errornoname'] = 'Character name missing';
 $string['errornousers'] = 'No users found';
 $string['formmsg'] = 'This plugin populates your users list with any character from the Marvel universe.<br/>
-You can get your own API keys for free signing up at <a href="https://developer.marvel.com" target="_blank">https://developer.marvel.com</a>';
+You can use the official <a href="https://www.marvel.com/comics/characters" target="_blank">characters page</a> to verify the correct spelling for any character.';
 $string['generateprogram'] = 'Generate users with super powers!';
 $string['missingprivatekey'] = 'Private key is missing';
 $string['missingpublickey'] = 'Public key is missing';
@@ -46,5 +46,7 @@ $string['searchexactmatch'] = 'Exact match';
 $string['searchmanual'] = 'Search manually for a character\'s name';
 $string['searchrandom'] = 'Generate random characters';
 $string['searchstartswith'] = 'Starts with';
+$string['settingsmsg'] = 'This plugin populates your users list with any character from the Marvel universe.<br/>
+You can get your own API keys for free signing up at <a href="https://developer.marvel.com" target="_blank">https://developer.marvel.com</a>';
 $string['tool_poweruserssettings'] = 'Power users settings';
 $string['userscreated'] = '{$a} user(s) created succesfully';
