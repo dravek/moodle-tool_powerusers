@@ -131,20 +131,20 @@ class generator {
         $fs = get_file_storage();
         $fs->delete_area_files($context->id, 'user', 'newicon');
 
-        $filerecord = array(
+        $filerecord = [
            'contextid' => $context->id,
            'component' => 'user',
            'filearea' => 'newicon',
            'itemid' => 0,
-           'filepath' => '/'
-        );
+           'filepath' => '/',
+        ];
 
-        $urlparams = array(
+        $urlparams = [
            'calctimeout' => false,
            'timeout' => 5,
            'skipcertverify' => true,
-           'connecttimeout' => 5
-        );
+           'connecttimeout' => 5,
+        ];
 
         try {
             $fs->create_file_from_url($filerecord, $record['urlpicture'], $urlparams);
@@ -170,7 +170,7 @@ class generator {
         // Remove uploaded file.
         $fs->delete_area_files($context->id, 'user', 'newicon');
         // Set the user's picture.
-        $DB->set_field('user', 'picture', $newpicture, array('id' => $userid));
+        $DB->set_field('user', 'picture', $newpicture, ['id' => $userid]);
 
         \core\event\user_created::create_from_userid($userid)->trigger();
 
