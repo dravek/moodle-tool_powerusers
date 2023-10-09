@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component    = 'tool_powerusers';
-$plugin->version      = 2023042700;
+$plugin->version      = 2023100900;
 $plugin->requires     = 2015111600;
-$plugin->release      = '1.0.3';
+$plugin->release      = '1.0.4';
 $plugin->maturity     = MATURITY_STABLE;
 $plugin->dependencies = [];
