@@ -17,6 +17,7 @@
 namespace tool_powerusers;
 
 use moodle_exception;
+use moodle_url;
 use stdClass;
 
 /**
@@ -41,7 +42,8 @@ class marvelapi {
         $publickey = get_config('tool_powerusers', 'marvelpublickey');
 
         if (empty($privatekey) || empty($publickey)) {
-            throw new moodle_exception(get_string('errorkeys', 'tool_powerusers'));
+            throw new moodle_exception('errorkeys', 'tool_powerusers',
+                new moodle_url('/admin/settings.php', ['section' => 'tool_powerusers_settings']));
         }
 
         $name = str_replace( ' ', '%20', trim($name));
