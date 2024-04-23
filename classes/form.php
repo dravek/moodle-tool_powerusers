@@ -28,7 +28,7 @@ require_once($CFG->libdir . '/formslib.php');
  * Form for generating super heroes
  *
  * @package    tool_powerusers
- * @copyright  2022 David Matamoros <davidmc@moodle.com>
+ * @copyright  2022 David Carrillo <davidmc@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class form extends moodleform {
