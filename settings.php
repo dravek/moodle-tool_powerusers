@@ -19,7 +19,7 @@
  *
  * @var admin_category $ADMIN
  * @package   tool_powerusers
- * @copyright 2022 David Matamoros <davidmc@moodle.com>
+ * @copyright 2022 David Carrillo <davidmc@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
