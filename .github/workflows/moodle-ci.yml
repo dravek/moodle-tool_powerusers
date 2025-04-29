@@ -36,7 +36,7 @@ jobs:
             moodle-branch: 'MOODLE_404_STABLE'
           - php: '8.3'
             moodle-branch: 'MOODLE_405_STABLE'
-          - php: '8.3'
+          - php: '8.4'
             moodle-branch: 'MOODLE_500_STABLE'
 
     steps:
@@ -70,6 +70,10 @@ jobs:
       - name: Code checker
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci phpcs --max-warnings 0
+
+      - name: PHPDoc checker
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci phpdoc --max-warnings 0
 
       - name: Grunt
         if: ${{ !cancelled() }}
