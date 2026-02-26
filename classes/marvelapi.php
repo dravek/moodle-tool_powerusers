@@ -46,7 +46,7 @@ class marvelapi {
                 new moodle_url('/admin/settings.php', ['section' => 'tool_powerusers_settings']));
         }
 
-        $name = str_replace( ' ', '%20', trim($name));
+        $name = rawurlencode(trim($name));
         $hash = md5($ts.$privatekey.$publickey);
         $type = ($type === constants::SEARCH_EXACT_MATCH) ? 'name' : 'nameStartsWith';
 
@@ -78,7 +78,7 @@ class marvelapi {
             'username' => clean_param(strtolower(str_replace(' ', '', $data->name)), PARAM_ALPHANUM),
             'firstname' => $firstname,
             'lastname' => $lastname,
-            'urlpicture' => $data->thumbnail->path . '.' . $data->thumbnail->extension,
+            'urlpicture' => str_replace('http://', 'https://', $data->thumbnail->path) . '.' . $data->thumbnail->extension,
             'description' => $data->description ?? '',
         ];
     }

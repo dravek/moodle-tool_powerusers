@@ -62,7 +62,7 @@ class generator {
             }
         } else {
             // Generate users randomly from a list.
-            $names = array_values(json_decode(file_get_contents(constants::FILENAME), false));
+            $names = array_values(json_decode(file_get_contents(__DIR__ . '/../' . constants::FILENAME), false));
             $total = count($names) - 1;
 
             while ($created < (int) $data->quantity) {
