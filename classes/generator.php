@@ -18,7 +18,6 @@ namespace tool_powerusers;
 
 use context_user;
 use file_exception;
-use moodle_exception;
 use stdClass;
 
 /**
@@ -29,7 +28,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class generator {
-
     /**
      * Generate users from the API
      *
@@ -38,23 +36,24 @@ class generator {
      */
     public function generate_users(stdClass $data): array {
         $created = 0;
+        $maxattempts = 100;
 
         $password = (!empty($data->randompassword)) ? generate_password() : trim($data->password);
 
         // Generate users manually entering the name.
         if ((int) $data->type === constants::MANUAL) {
-            $apidata = marvelapi::get_users($data->name, $data->searchaccuracy);
+            $apidata = superheroapi::get_users($data->name, $data->searchaccuracy);
 
             if ($apidata['status'] === constants::ERROR) {
-                return [false, 0, $apidata['results']['code'] . ':' . $apidata['results']['message']];
+                return [false, 0, (string) ($apidata['results']['message'] ?? get_string('errornousers', 'tool_powerusers'))];
             }
 
-            if ((int) $apidata['results']['data']->count === 0) {
+            if (count($apidata['results']) === 0) {
                 return [false, 0, get_string('errornousers', 'tool_powerusers')];
             }
 
-            foreach ($apidata['results']['data']->results as $result) {
-                $user = marvelapi::get_user_data($result);
+            foreach ($apidata['results'] as $result) {
+                $user = superheroapi::get_user_data((object) $result);
                 $user['password'] = $password;
                 if ($this->create_user($user)) {
                     $created++;
@@ -62,28 +61,35 @@ class generator {
             }
         } else {
             // Generate users randomly from a list.
-            $names = array_values(json_decode(file_get_contents(constants::FILENAME), false));
+            $namesfile = dirname(__DIR__) . '/' . constants::FILENAME;
+            $names = array_values(json_decode((string) file_get_contents($namesfile), false));
             $total = count($names) - 1;
 
-            while ($created < (int) $data->quantity) {
+            $attempts = 0;
+            while ($created < (int) $data->quantity && $attempts < $maxattempts) {
+                $attempts++;
                 $randomnumber = random_int(0, $total);
 
-                $apidata = marvelapi::get_users($names[$randomnumber], constants::SEARCH_EXACT_MATCH);
+                $apidata = superheroapi::get_users($names[$randomnumber], constants::SEARCH_EXACT_MATCH);
 
                 if ($apidata['status'] === constants::ERROR) {
-                    return [false, 0, $apidata['results']['code'] . ':' . $apidata['results']['message']];
-                }
-
-                if ((int) $apidata['results']['data']->count === 0) {
                     continue;
                 }
 
-                $result = reset($apidata['results']['data']->results);
-                $user = marvelapi::get_user_data($result);
+                if (count($apidata['results']) === 0) {
+                    continue;
+                }
+
+                $result = reset($apidata['results']);
+                $user = superheroapi::get_user_data((object) $result);
                 $user['password'] = $password;
                 if ($this->create_user($user)) {
                     $created++;
                 }
+            }
+
+            if ($created === 0) {
+                return [false, 0, get_string('errornousers', 'tool_powerusers')];
             }
         }
 
@@ -98,7 +104,7 @@ class generator {
      */
     private function create_user(array $record): bool {
         global $DB, $CFG;
-        require_once($CFG->dirroot.'/user/lib.php');
+        require_once($CFG->dirroot . '/user/lib.php');
         require_once($CFG->libdir . '/filelib.php');
         require_once($CFG->libdir . '/gdlib.php');
 
@@ -142,14 +148,20 @@ class generator {
         $urlparams = [
            'calctimeout' => false,
            'timeout' => 5,
-           'skipcertverify' => true,
            'connecttimeout' => 5,
         ];
+
+        if (empty($record['urlpicture']) || !$this->is_supported_picture_url((string) $record['urlpicture'])) {
+            \core\event\user_created::create_from_userid($userid)->trigger();
+            return true;
+        }
 
         try {
             $fs->create_file_from_url($filerecord, $record['urlpicture'], $urlparams);
         } catch (file_exception $e) {
-            throw new moodle_exception(get_string($e->errorcode, $e->module, $e->a));
+            debugging('tool_powerusers: Unable to download user image: ' . $e->getMessage(), DEBUG_DEVELOPER);
+            \core\event\user_created::create_from_userid($userid)->trigger();
+            return true;
         }
 
         $iconfile = $fs->get_area_files($context->id, 'user', 'newicon', false, 'itemid', false);
@@ -160,7 +172,8 @@ class generator {
         // Something went wrong while creating temp file - remove the uploaded file.
         if (!$iconfile = $iconfile->copy_content_to_temp()) {
             $fs->delete_area_files($context->id, 'user', 'newicon');
-            throw new moodle_exception('There was a problem copying the profile picture to temp.');
+            \core\event\user_created::create_from_userid($userid)->trigger();
+            return true;
         }
 
         // Copy file to temporary location and the send it for processing icon.
@@ -175,5 +188,23 @@ class generator {
         \core\event\user_created::create_from_userid($userid)->trigger();
 
         return true;
+    }
+
+    /**
+     * Validate that image URL has a supported remote scheme.
+     *
+     * @param string $url
+     * @return bool
+     */
+    private function is_supported_picture_url(string $url): bool {
+        $parts = parse_url(trim($url));
+        if ($parts === false || !is_array($parts)) {
+            return false;
+        }
+        if (empty($parts['scheme']) || empty($parts['host'])) {
+            return false;
+        }
+
+        return in_array(strtolower((string) $parts['scheme']), ['http', 'https'], true);
     }
 }
