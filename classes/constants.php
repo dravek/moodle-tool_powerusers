@@ -24,7 +24,6 @@ namespace tool_powerusers;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class constants {
-
     /** @var int Manual */
     public const MANUAL = 0;
 

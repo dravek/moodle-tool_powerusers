@@ -22,23 +22,25 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['apitoken'] = 'API token';
+$string['apitoken_desc'] = 'SuperHero API access token';
 $string['charactername'] = 'Character name';
 $string['error'] = '{$a}';
-$string['errorkeys'] = 'You need to add your public and private keys to plugin settings first!';
-$string['errormsg'] = 'That hash, timestamp and key combination is invalid';
+$string['errorkeys'] = 'You need to add your SuperHero API token in plugin settings first!';
+$string['errormsg'] = 'The API request failed';
 $string['errornoname'] = 'Character name missing';
 $string['errornousers'] = 'No users found';
-$string['formmsg'] = 'This plugin populates your users list with any character from the Marvel universe.<br/>
-You can use the official <a href="https://www.marvel.com/comics/characters" target="_blank">characters page</a> to verify the correct spelling for any character.';
+$string['formmsg'] = 'This plugin populates your users list with superhero characters.<br/>
+You can use the official <a href="https://superheroapi.com/ids.html" target="_blank">SuperHero API IDs page</a> to browse available characters.';
 $string['generateprogram'] = 'Generate users with super powers!';
-$string['missingprivatekey'] = 'Private key is missing';
-$string['missingpublickey'] = 'Public key is missing';
+$string['missingprivatekey'] = 'API token is missing';
+$string['missingpublickey'] = 'API token is missing';
 $string['pluginname'] = 'Power users generator';
 $string['privacy:metadata'] = 'The tool powerusers plugin does not store any personal data.';
-$string['privatekey'] = 'Private key';
-$string['privatekey_desc'] = 'Marvel API Private key';
-$string['publickey'] = 'Public key';
-$string['publickey_desc'] = 'Marvel API Public key';
+$string['privatekey'] = 'Legacy private key (deprecated)';
+$string['privatekey_desc'] = 'Deprecated setting, no longer used.';
+$string['publickey'] = 'Legacy public key (deprecated)';
+$string['publickey_desc'] = 'Deprecated setting, no longer used.';
 $string['quantity'] = 'Amount of users to generate';
 $string['randompassword'] = 'Random password';
 $string['searchaccuracy'] = 'Type of search for name';
@@ -46,7 +48,7 @@ $string['searchexactmatch'] = 'Exact match';
 $string['searchmanual'] = 'Search manually for a character\'s name';
 $string['searchrandom'] = 'Generate random characters';
 $string['searchstartswith'] = 'Starts with';
-$string['settingsmsg'] = 'This plugin populates your users list with any character from the Marvel universe.<br/>
-You can get your own API keys for free signing up at <a href="https://developer.marvel.com" target="_blank">https://developer.marvel.com</a>';
+$string['settingsmsg'] = 'This plugin populates your users list with superhero characters from SuperHero API.<br/>
+Generate your API token at <a href="https://superheroapi.com" target="_blank">https://superheroapi.com</a>';
 $string['tool_poweruserssettings'] = 'Power users settings';
-$string['userscreated'] = '{$a} user(s) created succesfully';
+$string['userscreated'] = '{$a} user(s) created successfully';

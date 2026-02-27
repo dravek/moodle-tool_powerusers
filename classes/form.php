@@ -32,7 +32,6 @@ require_once($CFG->libdir . '/formslib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class form extends moodleform {
-
     /**
      * Form definition
      */
@@ -101,6 +100,10 @@ class form extends moodleform {
 
         if ((int) $data['type'] === constants::MANUAL && empty($data['name'])) {
             $errors['name'] = get_string('errornoname', 'tool_powerusers');
+        }
+
+        if (empty($data['randompassword']) && trim((string) ($data['password'] ?? '')) === '') {
+            $errors['password'] = get_string('required');
         }
 
         return $errors;

@@ -42,7 +42,6 @@ $mform = new \tool_powerusers\form(null, []);
 if ($mform->is_cancelled()) {
     redirect($url);
 } else if ($data = $mform->get_data()) {
-
     $generator = new \tool_powerusers\generator();
     [$status, $count, $message] = $generator->generate_users($data);
 

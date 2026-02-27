@@ -16,19 +16,18 @@
 
 namespace tool_powerusers;
 
-use moodle_exception;
-use moodle_url;
 use stdClass;
 
 /**
  * Class marvelapi
+ *
+ * @deprecated since 2026-02-27 use \tool_powerusers\superheroapi instead.
  *
  * @package    tool_powerusers
  * @copyright  2022 David Carrillo <davidmc@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class marvelapi {
-
     /**
      * Call Marvel API to get the requested user(s)
      *
@@ -37,26 +36,8 @@ class marvelapi {
      * @return array [status, results]
      */
     public static function get_users(string $name, string $type): array {
-        $ts = time();
-        $privatekey = get_config('tool_powerusers', 'marvelprivatekey');
-        $publickey = get_config('tool_powerusers', 'marvelpublickey');
-
-        if (empty($privatekey) || empty($publickey)) {
-            throw new moodle_exception('errorkeys', 'tool_powerusers',
-                new moodle_url('/admin/settings.php', ['section' => 'tool_powerusers_settings']));
-        }
-
-        $name = str_replace( ' ', '%20', trim($name));
-        $hash = md5($ts.$privatekey.$publickey);
-        $type = ($type === constants::SEARCH_EXACT_MATCH) ? 'name' : 'nameStartsWith';
-
-        $url = "https://gateway.marvel.com/v1/public/characters?hash=$hash&apikey=$publickey&ts=$ts&$type=$name";
-        $content = download_file_content($url, null, null, true);
-
-        return [
-            'status' => ((int) $content->status !== 200) ? constants::ERROR : constants::OK,
-            'results' => (array) json_decode($content->results),
-        ];
+        debugging('tool_powerusers\\marvelapi is deprecated, use tool_powerusers\\superheroapi.', DEBUG_DEVELOPER);
+        return superheroapi::get_users($name, $type);
     }
 
     /**
@@ -66,20 +47,7 @@ class marvelapi {
      * @return array
      */
     public static function get_user_data(stdClass $data): array {
-        $name = format_string($data->name);
-        [$firstname, $lastname] = explode(' ', "$name ", 2);
-
-        // Some characters don't have last names.
-        if ($lastname === null || trim($lastname) === '') {
-            $lastname = ' ';
-        }
-
-        return [
-            'username' => clean_param(strtolower(str_replace(' ', '', $data->name)), PARAM_ALPHANUM),
-            'firstname' => $firstname,
-            'lastname' => $lastname,
-            'urlpicture' => $data->thumbnail->path . '.' . $data->thumbnail->extension,
-            'description' => $data->description ?? '',
-        ];
+        debugging('tool_powerusers\\marvelapi is deprecated, use tool_powerusers\\superheroapi.', DEBUG_DEVELOPER);
+        return superheroapi::get_user_data($data);
     }
 }
