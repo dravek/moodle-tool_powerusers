@@ -32,45 +32,62 @@ class generator {
      * Generate users from the API
      *
      * @param stdClass $data
-     * @return array [status, count, message]
+     * @return array [status, count, message, names]
      */
     public function generate_users(stdClass $data): array {
         $created = 0;
+        $creatednames = [];
         $maxattempts = 100;
 
         $password = (!empty($data->randompassword)) ? generate_password() : trim($data->password);
 
         // Generate users manually entering the name.
         if ((int) $data->type === constants::MANUAL) {
-            $apidata = superheroapi::get_users($data->name, $data->searchaccuracy);
+            if (empty($data->name)) {
+                return [false, 0, get_string('errornoname', 'tool_powerusers'), []];
+            }
+            $apidata = $this->get_users_from_api($data->name, $data->searchaccuracy);
 
             if ($apidata['status'] === constants::ERROR) {
-                return [false, 0, (string) ($apidata['results']['message'] ?? get_string('errornousers', 'tool_powerusers'))];
+                return [false, 0, (string) ($apidata['results']['message'] ?? get_string('errornousers', 'tool_powerusers')), []];
             }
 
             if (count($apidata['results']) === 0) {
-                return [false, 0, get_string('errornousers', 'tool_powerusers')];
+                return [false, 0, get_string('errornousers', 'tool_powerusers'), []];
             }
 
             foreach ($apidata['results'] as $result) {
-                $user = superheroapi::get_user_data((object) $result);
+                $user = $this->map_user_data((object) $result);
                 $user['password'] = $password;
                 if ($this->create_user($user)) {
                     $created++;
+                    $creatednames[] = trim($user['firstname'] . ' ' . $user['lastname']);
                 }
+            }
+
+            if ($created === 0) {
+                return [false, 0, get_string('erroruserexists', 'tool_powerusers'), []];
             }
         } else {
             // Generate users randomly from a list.
-            $namesfile = dirname(__DIR__) . '/' . constants::FILENAME;
-            $names = array_values(json_decode((string) file_get_contents($namesfile), false));
+            $names = $this->load_random_names();
+            if ($names === null) {
+                return [false, 0, get_string('errormsg', 'tool_powerusers'), []];
+            }
+
+            if (count($names) === 0) {
+                return [false, 0, get_string('errornousers', 'tool_powerusers'), []];
+            }
+
             $total = count($names) - 1;
 
+            $foundatleastone = false;
             $attempts = 0;
             while ($created < (int) $data->quantity && $attempts < $maxattempts) {
                 $attempts++;
                 $randomnumber = random_int(0, $total);
 
-                $apidata = superheroapi::get_users($names[$randomnumber], constants::SEARCH_EXACT_MATCH);
+                $apidata = $this->get_users_from_api($names[$randomnumber], constants::SEARCH_EXACT_MATCH);
 
                 if ($apidata['status'] === constants::ERROR) {
                     continue;
@@ -80,20 +97,23 @@ class generator {
                     continue;
                 }
 
+                $foundatleastone = true;
                 $result = reset($apidata['results']);
-                $user = superheroapi::get_user_data((object) $result);
+                $user = $this->map_user_data((object) $result);
                 $user['password'] = $password;
                 if ($this->create_user($user)) {
                     $created++;
+                    $creatednames[] = trim($user['firstname'] . ' ' . $user['lastname']);
                 }
             }
 
             if ($created === 0) {
-                return [false, 0, get_string('errornousers', 'tool_powerusers')];
+                $error = ($foundatleastone) ? 'erroruserexists' : 'errornousers';
+                return [false, 0, get_string($error, 'tool_powerusers'), []];
             }
         }
 
-        return [true, $created, ''];
+        return [true, $created, '', $creatednames];
     }
 
     /**
@@ -102,7 +122,7 @@ class generator {
      * @param array $record
      * @return bool
      */
-    private function create_user(array $record): bool {
+    protected function create_user(array $record): bool {
         global $DB, $CFG;
         require_once($CFG->dirroot . '/user/lib.php');
         require_once($CFG->libdir . '/filelib.php');
@@ -188,6 +208,62 @@ class generator {
         \core\event\user_created::create_from_userid($userid)->trigger();
 
         return true;
+    }
+
+    /**
+     * Wrapper to fetch users from API.
+     *
+     * @param string $name
+     * @param string $type
+     * @return array
+     */
+    protected function get_users_from_api(string $name, string $type): array {
+        return superheroapi::get_users($name, $type);
+    }
+
+    /**
+     * Wrapper to map API user payload.
+     *
+     * @param stdClass $data
+     * @return array
+     */
+    protected function map_user_data(stdClass $data): array {
+        return superheroapi::get_user_data($data);
+    }
+
+    /**
+     * Load random names list from plugin JSON file.
+     *
+     * @return array|null Null when list cannot be loaded or parsed.
+     */
+    protected function load_random_names(): ?array {
+        $namesfile = dirname(__DIR__) . '/' . constants::FILENAME;
+        if (!is_readable($namesfile)) {
+            return null;
+        }
+
+        $content = file_get_contents($namesfile);
+        if ($content === false) {
+            return null;
+        }
+
+        $decoded = json_decode($content, true);
+        if (!is_array($decoded)) {
+            return null;
+        }
+
+        $names = [];
+        foreach ($decoded as $name) {
+            if (!is_string($name)) {
+                continue;
+            }
+            $name = trim($name);
+            if ($name !== '') {
+                $names[] = $name;
+            }
+        }
+
+        return array_values($names);
     }
 
     /**

@@ -30,6 +30,7 @@ $string['errorkeys'] = 'You need to add your SuperHero API token in plugin setti
 $string['errormsg'] = 'The API request failed';
 $string['errornoname'] = 'Character name missing';
 $string['errornousers'] = 'No users found';
+$string['erroruserexists'] = 'All matching users already exist in the system';
 $string['formmsg'] = 'This plugin populates your users list with superhero characters.<br/>
 You can use the official <a href="https://superheroapi.com/ids.html" target="_blank">SuperHero API IDs page</a> to browse available characters.';
 $string['generateprogram'] = 'Generate users with super powers!';
@@ -51,4 +52,4 @@ $string['searchstartswith'] = 'Starts with';
 $string['settingsmsg'] = 'This plugin populates your users list with superhero characters from SuperHero API.<br/>
 Generate your API token at <a href="https://superheroapi.com" target="_blank">https://superheroapi.com</a>';
 $string['tool_poweruserssettings'] = 'Power users settings';
-$string['userscreated'] = '{$a} user(s) created successfully';
+$string['userscreated'] = '{$a->count} user(s) created successfully: {$a->names}';
