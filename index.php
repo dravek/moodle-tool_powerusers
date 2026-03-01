@@ -43,14 +43,31 @@ if ($mform->is_cancelled()) {
     redirect($url);
 } else if ($data = $mform->get_data()) {
     $generator = new \tool_powerusers\generator();
-    [$status, $count, $message] = $generator->generate_users($data);
+    [$status, $count, $message, $names] = $generator->generate_users($data);
 
-    if (!$status) {
-        $string = get_string('error', 'tool_powerusers', $message);
+    if (!$status || $count === 0) {
+        $string = $message ?: get_string('errornousers', 'tool_powerusers');
         redirect($url, $string, null, \core\output\notification::NOTIFY_ERROR);
     }
 
-    $string = get_string('userscreated', 'tool_powerusers', $count);
+    $nameslist = '';
+    $totalnames = count($names);
+
+    if ($totalnames > 1) {
+        $lastcreatedname = array_pop($names);
+        $nameparts = new stdClass();
+        $nameparts->one = implode(', ', $names);
+        $nameparts->two = $lastcreatedname;
+        $nameslist = get_string('and', 'moodle', $nameparts);
+    } else if ($totalnames === 1) {
+        $nameslist = (string) reset($names);
+    }
+
+    $a = new stdClass();
+    $a->count = $count;
+    $a->names = $nameslist;
+
+    $string = get_string('userscreated', 'tool_powerusers', $a);
     redirect($url, $string, null, \core\output\notification::NOTIFY_SUCCESS);
 }
 
