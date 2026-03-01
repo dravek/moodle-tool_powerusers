@@ -72,7 +72,7 @@ class superheroapi {
             $targetname = \core_text::strtolower($name);
             $results = array_values(array_filter($results, function (array $result) use ($targetname): bool {
                 $resultname = \core_text::strtolower(trim((string) ($result['name'] ?? '')));
-                return strpos($resultname, $targetname) === 0;
+                return \core_text::strpos($resultname, $targetname) === 0;
             }));
         }
 
