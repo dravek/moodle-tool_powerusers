@@ -38,6 +38,19 @@ $PAGE->set_heading($pluginname);
 
 $mform = new \tool_powerusers\form(null, []);
 
+$PAGE->requires->js_amd_inline("
+    document.getElementById('powerusers-form').addEventListener('submit', function(e) {
+        const submitButton = this.querySelector('[name=\"submitbutton\"]');
+        if (submitButton) {
+            submitButton.disabled = true;
+            const icon = document.createElement('i');
+            icon.className = 'fa fa-spinner fa-spin';
+            icon.style.marginLeft = '5px';
+            submitButton.parentNode.appendChild(icon);
+        }
+    });
+");
+
 // Process Form data.
 if ($mform->is_cancelled()) {
     redirect($url);

@@ -37,6 +37,7 @@ class form extends moodleform {
      */
     public function definition() {
         $mform = $this->_form;
+        $mform->updateAttributes(['id' => 'powerusers-form']);
 
         $html = html_writer::tag('div', get_string('formmsg', 'tool_powerusers'));
         $mform->addElement('static', 'formmsg', '', $html);
@@ -103,7 +104,7 @@ class form extends moodleform {
         }
 
         if (empty($data['randompassword']) && trim((string) ($data['password'] ?? '')) === '') {
-            $errors['password'] = get_string('required');
+            $errors['passwordgroup'] = get_string('required');
         }
 
         return $errors;
