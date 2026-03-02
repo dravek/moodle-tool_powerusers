@@ -135,6 +135,112 @@ final class generator_test extends advanced_testcase {
     }
 
     /**
+     * Test manual generation with empty name returns errornoname.
+     */
+    public function test_generate_users_manual_empty_name_returns_errornoname(): void {
+        $generator = $this->build_generator([], [], []);
+
+        $result = $generator->generate_users($this->manual_data('', constants::SEARCH_STARTS_WITH));
+
+        $this->assertFalse($result[0]);
+        $this->assertSame(0, $result[1]);
+        $this->assertSame(get_string('errornoname', 'tool_powerusers'), $result[2]);
+    }
+
+    /**
+     * Test manual generation with API error returns API message.
+     */
+    public function test_generate_users_manual_api_error_returns_message(): void {
+        $generator = $this->build_generator(
+            [
+                [
+                    'status' => constants::ERROR,
+                    'results' => ['message' => 'API Down'],
+                ],
+            ],
+            [],
+            []
+        );
+
+        $result = $generator->generate_users($this->manual_data('Spider', constants::SEARCH_STARTS_WITH));
+
+        $this->assertFalse($result[0]);
+        $this->assertSame('API Down', $result[2]);
+    }
+
+    /**
+     * Test manual generation with empty results returns errornousers.
+     */
+    public function test_generate_users_manual_empty_results_returns_errornousers(): void {
+        $generator = $this->build_generator(
+            [
+                [
+                    'status' => constants::OK,
+                    'results' => [],
+                ],
+            ],
+            [],
+            []
+        );
+
+        $result = $generator->generate_users($this->manual_data('Spider', constants::SEARCH_STARTS_WITH));
+
+        $this->assertFalse($result[0]);
+        $this->assertSame(get_string('errornousers', 'tool_powerusers'), $result[2]);
+    }
+
+    /**
+     * Test random generation with empty name list returns errornousers.
+     */
+    public function test_generate_users_random_empty_names_list_returns_errornousers(): void {
+        $generator = $this->build_generator([], [], []);
+
+        $result = $generator->generate_users($this->random_data(1));
+
+        $this->assertFalse($result[0]);
+        $this->assertSame(0, $result[1]);
+        $this->assertSame(get_string('errornousers', 'tool_powerusers'), $result[2]);
+    }
+
+    /**
+     * Test random generation reaching max attempts.
+     */
+    public function test_generate_users_random_max_attempts(): void {
+        // Mock API always returning error to force reaching max attempts.
+        $generator = $this->build_generator([], [], ['Iron Man']);
+
+        $result = $generator->generate_users($this->random_data(5));
+
+        $this->assertFalse($result[0]);
+        $this->assertSame(0, $result[1]);
+        $this->assertSame(get_string('errornousers', 'tool_powerusers'), $result[2]);
+    }
+
+    /**
+     * Test generate_users with random password.
+     */
+    public function test_generate_users_random_password(): void {
+        $generator = $this->build_generator(
+            [
+                [
+                    'status' => constants::OK,
+                    'results' => [['name' => 'Spider Man']],
+                ],
+            ],
+            [true],
+            []
+        );
+
+        $data = $this->manual_data('Spider', constants::SEARCH_STARTS_WITH);
+        $data->randompassword = 1;
+
+        $result = $generator->generate_users($data);
+
+        $this->assertTrue($result[0]);
+        $this->assertSame(1, $result[1]);
+    }
+
+    /**
      * Build manual generator request data.
      *
      * @param string $name

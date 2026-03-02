@@ -35,85 +35,129 @@ class generator {
      * @return array [status, count, message, names]
      */
     public function generate_users(stdClass $data): array {
+        $password = $this->get_password($data);
+
+        if ((int) $data->type === constants::MANUAL) {
+            return $this->generate_manual_users($data, $password);
+        }
+
+        return $this->generate_random_users($data, $password);
+    }
+
+    /**
+     * Get password from data or generate a random one.
+     *
+     * @param stdClass $data
+     * @return string
+     */
+    protected function get_password(stdClass $data): string {
+        return (!empty($data->randompassword)) ? generate_password() : trim($data->password);
+    }
+
+    /**
+     * Generate users manually entering the name.
+     *
+     * @param stdClass $data
+     * @param string $password
+     * @return array [status, count, message, names]
+     */
+    protected function generate_manual_users(stdClass $data, string $password): array {
+        if (empty($data->name)) {
+            return [false, 0, get_string('errornoname', 'tool_powerusers'), []];
+        }
+
+        $apidata = $this->get_users_from_api($data->name, $data->searchaccuracy);
+
+        if ($apidata['status'] === constants::ERROR) {
+            return [false, 0, (string) ($apidata['results']['message'] ?? get_string('errornousers', 'tool_powerusers')), []];
+        }
+
+        if (count($apidata['results']) === 0) {
+            return [false, 0, get_string('errornousers', 'tool_powerusers'), []];
+        }
+
         $created = 0;
         $creatednames = [];
-        $maxattempts = 100;
-
-        $password = (!empty($data->randompassword)) ? generate_password() : trim($data->password);
-
-        // Generate users manually entering the name.
-        if ((int) $data->type === constants::MANUAL) {
-            if (empty($data->name)) {
-                return [false, 0, get_string('errornoname', 'tool_powerusers'), []];
-            }
-            $apidata = $this->get_users_from_api($data->name, $data->searchaccuracy);
-
-            if ($apidata['status'] === constants::ERROR) {
-                return [false, 0, (string) ($apidata['results']['message'] ?? get_string('errornousers', 'tool_powerusers')), []];
-            }
-
-            if (count($apidata['results']) === 0) {
-                return [false, 0, get_string('errornousers', 'tool_powerusers'), []];
-            }
-
-            foreach ($apidata['results'] as $result) {
-                $user = $this->map_user_data((object) $result);
-                $user['password'] = $password;
-                if ($this->create_user($user)) {
-                    $created++;
-                    $creatednames[] = trim($user['firstname'] . ' ' . $user['lastname']);
-                }
-            }
-
-            if ($created === 0) {
-                return [false, 0, get_string('erroruserexists', 'tool_powerusers'), []];
-            }
-        } else {
-            // Generate users randomly from a list.
-            $names = $this->load_random_names();
-            if ($names === null) {
-                return [false, 0, get_string('errormsg', 'tool_powerusers'), []];
-            }
-
-            if (count($names) === 0) {
-                return [false, 0, get_string('errornousers', 'tool_powerusers'), []];
-            }
-
-            $total = count($names) - 1;
-
-            $foundatleastone = false;
-            $attempts = 0;
-            while ($created < (int) $data->quantity && $attempts < $maxattempts) {
-                $attempts++;
-                $randomnumber = random_int(0, $total);
-
-                $apidata = $this->get_users_from_api($names[$randomnumber], constants::SEARCH_EXACT_MATCH);
-
-                if ($apidata['status'] === constants::ERROR) {
-                    continue;
-                }
-
-                if (count($apidata['results']) === 0) {
-                    continue;
-                }
-
-                $foundatleastone = true;
-                $result = reset($apidata['results']);
-                $user = $this->map_user_data((object) $result);
-                $user['password'] = $password;
-                if ($this->create_user($user)) {
-                    $created++;
-                    $creatednames[] = trim($user['firstname'] . ' ' . $user['lastname']);
-                }
-            }
-
-            if ($created === 0) {
-                $error = ($foundatleastone) ? 'erroruserexists' : 'errornousers';
-                return [false, 0, get_string($error, 'tool_powerusers'), []];
+        foreach ($apidata['results'] as $result) {
+            $fullname = $this->create_user_from_result((array) $result, $password);
+            if ($fullname !== null) {
+                $created++;
+                $creatednames[] = $fullname;
             }
         }
 
+        if ($created === 0) {
+            return [false, 0, get_string('erroruserexists', 'tool_powerusers'), []];
+        }
+
         return [true, $created, '', $creatednames];
+    }
+
+    /**
+     * Generate users randomly from a list.
+     *
+     * @param stdClass $data
+     * @param string $password
+     * @return array [status, count, message, names]
+     */
+    protected function generate_random_users(stdClass $data, string $password): array {
+        $names = $this->load_random_names();
+        if ($names === null) {
+            return [false, 0, get_string('errormsg', 'tool_powerusers'), []];
+        }
+
+        if (count($names) === 0) {
+            return [false, 0, get_string('errornousers', 'tool_powerusers'), []];
+        }
+
+        $created = 0;
+        $creatednames = [];
+        $maxattempts = 100;
+        $attempts = 0;
+        $total = count($names) - 1;
+        $foundatleastone = false;
+
+        while ($created < (int) $data->quantity && $attempts < $maxattempts) {
+            $attempts++;
+            $randomnumber = random_int(0, $total);
+
+            $apidata = $this->get_users_from_api($names[$randomnumber], constants::SEARCH_EXACT_MATCH);
+
+            if ($apidata['status'] === constants::ERROR || count($apidata['results']) === 0) {
+                continue;
+            }
+
+            $foundatleastone = true;
+            $result = reset($apidata['results']);
+            $fullname = $this->create_user_from_result((array) $result, $password);
+            if ($fullname !== null) {
+                $created++;
+                $creatednames[] = $fullname;
+            }
+        }
+
+        if ($created === 0) {
+            $error = ($foundatleastone) ? 'erroruserexists' : 'errornousers';
+            return [false, 0, get_string($error, 'tool_powerusers'), []];
+        }
+
+        return [true, $created, '', $creatednames];
+    }
+
+    /**
+     * Create a user from an API result.
+     *
+     * @param array $result
+     * @param string $password
+     * @return string|null The created user's full name, or null if creation failed.
+     */
+    protected function create_user_from_result(array $result, string $password): ?string {
+        $user = $this->map_user_data((object) $result);
+        $user['password'] = $password;
+        if ($this->create_user($user)) {
+            return trim($user['firstname'] . ' ' . $user['lastname']);
+        }
+        return null;
     }
 
     /**
